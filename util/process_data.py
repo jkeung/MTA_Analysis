@@ -32,7 +32,11 @@ def addDayOfWeek(DataFrameDict):
     It will add a column of day of week 0 through 6 with 0 being Sunday
     """
     for key in DataFrameDict:
-        DataFrameDict[key]['DAYOfWEEK']=DataFrameDict[key]['DATE'].apply(lambda x: datetime.strptime(x,'%m/%d/%Y').strftime('%w'))
+        DataFrameDict[key]['DAY']=DataFrameDict[key]['DATE'].apply(lambda x: datetime.strptime(x,'%m/%d/%Y').strftime('%w'))
+
+    for key in DataFrameDict:
+        DataFrameDict[key]['MONTH']=DataFrameDict[key]['DATE'].apply(lambda x: datetime.strptime(x,'%m/%d/%Y').strftime('%m'))
+
     return DataFrameDict
 
 def main():
