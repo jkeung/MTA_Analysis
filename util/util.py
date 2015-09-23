@@ -44,6 +44,21 @@ def get_data_local(name):
     return data
 
 
+def add_Day_Month(data):
+
+    """
+    Given a dict where keys are the stations and values are panda timeseries
+    It will add a column of day of week 0 through 6 with 0 being Sunday
+    """
+
+    data['DAY'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
+    data['MONTH'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
+
+    return data
+
+
 def create_dict_by_STATION(data):
 
     """
@@ -81,22 +96,10 @@ def dict_station_time_totals(DataFrameDict):
         shift = shift[shift >= 0]
         sum_dict[key] = shift
 
+
     return sum_dict
 
 
-def add_Day_Month(data):
-
-    """
-    Given a dict where keys are the stations and values are panda timeseries
-    It will add a column of day of week 0 through 6 with 0 being Sunday
-    """
-
-    data['DAY'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
-    data['MONTH'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
-
-    return data
 
 
 def get_Day_sum(DataFrameDict):
@@ -110,6 +113,8 @@ def get_Day_sum(DataFrameDict):
     for key in DataFrameDict:
         day_dict[key] = DataFrameDict[key].groupby(
             ['STATION', 'DAY']).aggregate(sum)
+
+    print(day_dict)
 
     return day_dict
 
@@ -155,8 +160,8 @@ def obtain_full_data():
 def main():
     data = get_data_local("MTA_DATA.csv")
     data = add_Day_Month(data)
-    print(data.head())
-    #dicts = create_dict_by_STATION(data)
+    dicts = create_dict_by_STATION(data)
+    print(get_Day_sum(dicts))
     #get_month_sum(dicts)
     #dict_station_time_totals(dicts)
 
