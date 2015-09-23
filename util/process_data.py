@@ -16,7 +16,7 @@ def get_data():
     df = pd.read_csv(baseLink+currentDate.strftime('%y%m%d')+'.txt')
     while(currentDate < endDate):
         currentDate = currentDate+timedelta(days=7)
-        df.append(pd.read_csv(baseLink+currentDate.strftime('%y%m%d')+'.txt'))
+        df=df.append(pd.read_csv(baseLink+currentDate.strftime('%y%m%d')+'.txt'))
 
     return df
 
