@@ -90,8 +90,6 @@ def add_Day_Month(data):
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
     data['MONTH'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
-    data['HOUR'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%H'))
 
     return data
 
@@ -126,6 +124,21 @@ def get_month_sum(DataFrameDict):
     return month_dict
 
 
+def get_hour_sum(DataFrameDict):
+    """"
+    This takes a dictionary of data frames
+    Returns a dictionary of dataframes containing the sum of entries per month
+    For the given station as a key
+    """
+
+    hour_dict = {}
+    for key in DataFrameDict:
+        hour_dict[key] = DataFrameDict[key].groupby(
+            ['STATION', 'TIME']).aggregate(sum)
+
+    return hour_dict
+
+
 def obtain_full_data():
     data = get_data_local()
     data = add_Day_Month(data)
@@ -137,9 +150,10 @@ def obtain_full_data():
 def main():
     data = get_data_local("MTA_DATA.csv")
     data = add_Day_Month(data)
-    dicts = create_dict_by_STATION(data)
+    print(data.head())
+    #dicts = create_dict_by_STATION(data)
     #get_month_sum(dicts)
-    dict_station_time_totals(dicts)
+    #dict_station_time_totals(dicts)
 
 if __name__ == '__main__':
     main()
