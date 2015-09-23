@@ -64,10 +64,19 @@ def dict_station_time_totals(DataFrameDict):
     the difference in entries per station from one time frame to the next
     """
 
-    sum_dict = {key: (DataFrameDict[key].groupby(
-        ['DATE', 'TIME']).aggregate(sum) -
-        DataFrameDict[key].groupby(['DATE', 'TIME']).aggregate(sum).shift(1))
-        for key in DataFrameDict}
+    sum_dict = {key: pd.DataFrame for key in DataFrameDict}
+
+    for key in DataFrameDict:
+        shift = (DataFrameDict[key].groupby(
+            ['DATE', 'TIME']).aggregate(sum) -
+            DataFrameDict[key].groupby(['DATE', 'TIME']).aggregate(sum).shift(1)
+            )
+
+        shift = shift[shift < 5000]
+        shift = shift[shift >= 0]
+        sum_dict[key] = shift
+
+    print(sum_dict["NEW LOTS AVE"])
 
     return sum_dict
 
@@ -87,6 +96,21 @@ def add_Day_Month(data):
     return data
 
 
+def get_Day_sum(DataFrameDict):
+    """"
+    This takes a dictionary of data frames
+    Returns a dictionary of dataframes containing the sum of entries per day
+    For the given station as a key
+    """
+
+    day_dict = {}
+    for key in DataFrameDict:
+        day_dict[key] = DataFrameDict[key].groupby(
+            ['STATION', 'DAY']).aggregate(sum)
+
+    return day_dict
+
+
 def get_month_sum(DataFrameDict):
     """"
     This takes a dictionary of data frames
@@ -99,7 +123,7 @@ def get_month_sum(DataFrameDict):
         month_dict[key] = DataFrameDict[key].groupby(
             ['STATION', 'MONTH']).aggregate(sum)
 
-    pprint(month_dict)
+    return month_dict
 
 
 def obtain_full_data():
@@ -112,10 +136,9 @@ def obtain_full_data():
 
 def main():
     data = get_data_local("MTA_DATA.csv")
-    save_file("MTA_DATA.csv", data)
     data = add_Day_Month(data)
     dicts = create_dict_by_STATION(data)
-    get_month_sum(dicts)
+    #get_month_sum(dicts)
     dict_station_time_totals(dicts)
 
 if __name__ == '__main__':
