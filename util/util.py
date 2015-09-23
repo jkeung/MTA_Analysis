@@ -10,13 +10,18 @@ def get_data():
     It loops through all recent data, and appends it to a single csv datafile
     """
 
-    endDate = datetime.strptime('150919', '%y%m%d')
-    currentDate = datetime.strptime('141025', '%y%m%d')
-    baseLink = 'http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
-    df = pd.read_csv(baseLink+currentDate.strftime('%y%m%d')+'.txt')
-    while(currentDate < endDate):
-        currentDate = currentDate+timedelta(days=7)
-        df.append(pd.read_csv(baseLink+currentDate.strftime('%y%m%d')+'.txt'))
+    end_date = datetime.strptime('150919', '%y%m%d')
+    current_date = datetime.strptime('141025', '%y%m%d')
+    base_link='http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
+    df = pd.read_csv(base_link+current_date.strftime('%y%m%d')+'.txt')
+    total=len(df)
+    while(current_date < end_date):
+        current_date = current_date+timedelta(days=7)
+        link=base_link+current_date.strftime('%y%m%d')+'.txt'
+        new_df=pd.read_csv(link)
+        total+=len(new_df)
+        print link,total
+        df=df.append(new_df,ignore_index=True)
 
     return df
 
