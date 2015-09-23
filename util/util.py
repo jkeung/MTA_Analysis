@@ -90,6 +90,8 @@ def add_Day_Month(data):
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
     data['MONTH'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
+    data['HOUR'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%H'))
 
     return data
 
