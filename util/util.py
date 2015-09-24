@@ -88,12 +88,13 @@ def dict_station_time_totals(DataFrameDict):
 
     for key in DataFrameDict:
         shift = (DataFrameDict[key].groupby(
-            ['DATE', 'TIME']).aggregate(sum) -
-            DataFrameDict[key].groupby(['DATE', 'TIME']).aggregate(sum).shift(1)
+            ['DATE', 'TIME'])["ENTRIES"].aggregate(sum) -
+            DataFrameDict[key].groupby(['DATE', 'TIME'])["ENTRIES"].aggregate(sum).shift(1)
             )
 
         shift = shift[shift < 5000]
         shift = shift[shift >= 0]
+        DataFrameDict[key]
         sum_dict[key] = shift
 
 
@@ -158,10 +159,12 @@ def obtain_full_data():
 
 
 def main():
-    data = get_data_local("MTA_DATA.csv")
-    data = add_Day_Month(data)
-    dicts = create_dict_by_STATION(data)
-    print(get_Day_sum(dicts))
+    data = get_data()
+    save_file("MTA_DATA.csv",data)
+    #data = get_data_local("MTA_DATA.csv")
+    #data = add_Day_Month(data)
+    #dicts = create_dict_by_STATION(data)
+    #print(get_Day_sum(dicts))
     #get_month_sum(dicts)
     #dict_station_time_totals(dicts)
 
