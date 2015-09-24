@@ -32,7 +32,7 @@ def save_file(name, data):
     Saves pandas data to a csv file
     """
 
-    data.save(name)
+    data.to_pickle(name)
 
 
 def get_data_local(name):
