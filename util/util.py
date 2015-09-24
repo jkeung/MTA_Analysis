@@ -12,16 +12,16 @@ def get_data():
 
     end_date = datetime.strptime('150919', '%y%m%d')
     current_date = datetime.strptime('141025', '%y%m%d')
-    base_link='http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
+    base_link = 'http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
     df = pd.read_csv(base_link+current_date.strftime('%y%m%d')+'.txt')
-    total=len(df)
+    total = len(df)
     while(current_date < end_date):
         current_date = current_date+timedelta(days=7)
-        link=base_link+current_date.strftime('%y%m%d')+'.txt'
-        new_df=pd.read_csv(link)
-        total+=len(new_df)
-        print link,total
-        df=df.append(new_df,ignore_index=True)
+        link = base_link+current_date.strftime('%y%m%d')+'.txt'
+        new_df = pd.read_csv(link)
+        total += len(new_df)
+        print link, total
+        df = df.append(new_df, ignore_index=True)
 
     return df
 
@@ -54,13 +54,13 @@ def add_clean_columns(data):
     """
 
     #rename columns
-    data = data.rename(columns = {'EXITS                                                               ':'EXITS'})
+    data = data.rename(columns = {'EXITS                                                               ': 'EXITS'})
     #add columns
     data['DAY'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
     data['MONTH'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
-    data['TIMEFRAME_ENTRIES'] = data['ENTRIES']-data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
+    data['TIMEFRAME_ENTRIES'] = data['ENTRIES'] - data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
     data['TIMEFRAME_EXITS'] = data['EXITS']-data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['EXITS'].shift(1)
     #drop columns
     data = data.drop('ENTRIES', 1)
@@ -178,7 +178,7 @@ def obtain_full_data():
 
 def main():
     data = get_data()
-    save_file("MTA_DATA.csv",data)
+    save_file("MTA_DATA.p",data)
     #data = get_data_local("MTA_DATA.csv")
     #data = add_Day_Month(data)
     #dicts = create_dict_by_STATION(data)
