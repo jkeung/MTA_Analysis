@@ -51,31 +51,61 @@ def add_clean_columns(data):
     Adds: 'DAY', 'MONTH', 'TIMEFRAME_ENTRIES', 'TIMEFRAME_EXITS'
     Removes: 'ENTRIES', 'EXITS'
     Filters: Keeps entries and exits only between 0 and 5000
+
+    ORDER MATTERS FOR CLEANING
     """
 
-    #rename columns
     data = data.rename(columns = {'EXITS                                                               ': 'EXITS'})
-    #add columns
-    data['DAY'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
-    data['MONTH'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
-    data['TIMEFRAME_ENTRIES'] = data['ENTRIES'] - data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
-    data['TIMEFRAME_EXITS'] = data['EXITS']-data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['EXITS'].shift(1)
-    #drop columns
-    data = data.drop('ENTRIES', 1)
-    data = data.drop('EXITS', 1)
-    #remove NAs
-    data.dropna()
-    #filter entries/exits
+    data = add_day_month(data)
+    data = add_entry_exit_totals(data)
+    data = drop_unneeded_columns(data)
+    data = add_traffic_column(data)
+
+    return data
+
+
+def add_traffic_column(data):
+
     data = data[(data['TIMEFRAME_ENTRIES'] >= 0) & (data['TIMEFRAME_ENTRIES'] <= 5000)]
     data = data[(data['TIMEFRAME_EXITS'] >= 0) & (data['TIMEFRAME_EXITS'] <= 5000)]
-    #create traffic column
     data['TRAFFIC'] = data['TIMEFRAME_ENTRIES'] + data['TIMEFRAME_EXITS']
     data = data.drop('TIMEFRAME_ENTRIES', 1)
     data = data.drop('TIMEFRAME_EXITS', 1)
 
     return data
+
+
+def drop_unneeded_columns(data):
+
+    data = data.drop('ENTRIES', 1)
+    data = data.drop('EXITS', 1)
+    data.dropna()
+
+    return data
+
+
+def add_entry_exit_totals(data):
+
+    entries = data['ENTRIES'] - \
+        data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
+    exit = data['EXITS'] - \
+        data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['EXITS'].shift(1)
+
+    data['TIMEFRAME_ENTRIES'] = entries
+    data['TIMEFRAME_EXITS'] = exit
+
+    return data
+
+
+def add_day_month(data):
+
+    data['DAY'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
+    data['MONTH'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
+
+    return data
+
 
 def create_dict_by_STATION(data):
 
