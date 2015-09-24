@@ -32,7 +32,7 @@ def save_file(name, data):
     Saves pandas data to a csv file
     """
 
-    data.to_csv(name)
+    data.save(name)
 
 
 def get_data_local(name):
@@ -40,7 +40,7 @@ def get_data_local(name):
     Reads data from local csv file
     """
 
-    data = pd.read_csv(name)
+    data = pd.load(name)
     return data
 
 
