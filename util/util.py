@@ -40,7 +40,7 @@ def get_data_local(name):
     Reads data from local csv file
     """
 
-    data = pd.load(name)
+    data = pd.read_pickle(name)
     return data
 
 
