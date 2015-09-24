@@ -135,11 +135,9 @@ def dict_station_time_totals(DataFrameDict):
     sum_dict = {key: pd.DataFrame for key in DataFrameDict}
 
     for key in DataFrameDict:
-        shift = (DataFrameDict[key].groupby(
-            ['DATE', 'TIME'])["ENTRIES"].aggregate(sum) -
-            DataFrameDict[key].groupby(['DATE', 'TIME'])["ENTRIES"].aggregate(sum).shift(1)
-            )
 
+        el = DataFrameDict[key].groupby(['DATE', 'TIME'])["ENTRIES"].aggregate(sum)
+        shift = (el - el.shift(1))
         shift = shift[shift < 5000]
         shift = shift[shift >= 0]
         DataFrameDict[key]
