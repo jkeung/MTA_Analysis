@@ -101,6 +101,8 @@ def add_day_month(data):
 
     data['DAY'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
+    data['DAY_NUM'] = data['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
     data['MONTH'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
 
