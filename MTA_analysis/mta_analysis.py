@@ -1,5 +1,5 @@
 
-def get_top_hours(data, filename='top_days.png'):
+def get_top_hours(data, filename='top_hours.png'):
 
     """
     Given a Processed DataFrame it plots the hours in a day binned by 4 hours
