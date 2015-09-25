@@ -28,6 +28,10 @@ def get_top_n_stations(data, n, filename='top_stations.png'):
 
 def get_top_days(data, filename='top_days.png'):
 
+    """
+    Given dataframe containing cleaned data, identifies sums of all data by days.
+    """
+
     top_days = data.groupby(['DAY_NUM', 'DAY']).sum()
     ax = top_days.plot(kin='bar', title='Top Turnstile Traffic for Day of Week')
     fig = ax.get_figure()
