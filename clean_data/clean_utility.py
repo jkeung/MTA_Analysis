@@ -257,23 +257,10 @@ def get_hour_sum(DataFrameDict):
     return hour_dict
 
 
-def obtain_full_data():
-    data = get_data_local()
-    data = add_Day_Month(data)
-    dicts = create_dict_by_STATION(data)
-
-    return dicts
-
-
 def main():
     data = get_data()
     save_file("MTA_DATA.p",data)
-    #data = get_data_local("MTA_DATA.csv")
-    #data = add_Day_Month(data)
-    #dicts = create_dict_by_STATION(data)
-    #print(get_Day_sum(dicts))
-    #get_month_sum(dicts)
-    #dict_station_time_totals(dicts)
+
 
 if __name__ == '__main__':
     main()
