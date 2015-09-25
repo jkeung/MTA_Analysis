@@ -1,5 +1,5 @@
 
-def get_top_hours(data, filename='top_days.png'):
+def get_top_hours(data, filename='top_hours.png'):
 
     """
     Given a Processed DataFrame it plots the hours in a day binned by 4 hours
@@ -52,18 +52,40 @@ def get_month_sums(data, filename = 'month_sums.png'):
 
     return months[['TRAFFIC']]
 
+
 def plot_station(data, station):
 
     """
-    Given dataframe containing cleaned data and list of stations, plots time bin data 
+    Given dataframe containing cleaned data and list of stations, 
+    plots time bin data 
     for a station
     """
-    topstationdata = data[data['STATION']==station]
-    ax = topstationdata.groupby(['TIME_BIN']).sum().plot(kind = 'bar', title='%s Station Schedule' % station)
+
+    top_station_data = data[data['STATION'] == station]
+    hours = top_station_data.groupby(['TIME_BIN']).sum()
+    ax = hours.plot(kind='bar', title='%s Station Schedule' % station)
     fig = ax.get_figure()
-    fig.savefig('%s_station_schedule.png' %station.replace(' ', '_'), bbox_inches='tight')
-    
-    return topstationdata
+    fig.savefig('%s_station_schedule.png' % station.replace(' ', '_'), bbox_inches='tight')
+
+    return top_station_data
+
+
+def plot_station_day(data, station):
+
+    """ 
+    Given dataframe containing cleaned data and list of stations, 
+    plots time bin data.
+    for a station
+    """
+
+    top_station_data = data[data['STATION'] == station]
+    sums_ = top_station_data.groupby(['DAY']).sum()
+    ax = sums_[["TRAFFIC"]].plot(kind='bar', title='%s Station Schedule' % station)
+    fig = ax.get_figure()
+    fig.savefig('%s_station_schedule_week.png' % station.replace(' ', '_'), bbox_inches='tight')
+
+    return top_station_data[['TRAFFIC']]
+
 
 def main():
     pass
