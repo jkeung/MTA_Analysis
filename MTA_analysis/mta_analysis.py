@@ -46,11 +46,11 @@ def get_month_sums(data, filename = 'month_sums.png'):
     """
 
     months = data[(data['MONTH']!='09') & (data['MONTH']!='10')].groupby('MONTH').aggregate(sum)['TRAFFIC']
-    ax = months[['TRAFFIC']].plot(kind='bar',title='Sum Of Months')
+    ax = months.plot(kind='bar',title='Sum Of Months')
     fig = ax.get_figure()
     fig.savefig(filename, bbox_inches='tight')
 
-    return months[['TRAFFIC']]
+    return months
 
 def plot_station(data, station):
 
