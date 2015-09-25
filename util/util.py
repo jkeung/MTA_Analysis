@@ -92,11 +92,12 @@ def get_range(time):
         if time <= curr and time > prev:
             return float(curr/10000)
         elif time == 200000:
+            float(200000/10000)
             return float(200000/10000)
         elif time > float(200000):
-            return float(0)
+            return float(24)
         elif time == 0:
-            return float(0)
+            return float(24)
 
 
 def add_traffic_column(data):
