@@ -13,6 +13,9 @@ def get_top_n_stations(data, n, filename='top_stations.png'):
     return top_stations
 
 def get_top_days(data, filename = 'top_days.png'):
+    """
+    Given dataframe containing cleaned data, identifies top days of week and saves plot.
+    """
     
     top_days = data.groupby(['DAY_NUM', 'DAY']).sum()
     ax = top_days.plot(kind = 'bar', title = 'Top Turnstile Traffic for Day of Week')
@@ -21,7 +24,17 @@ def get_top_days(data, filename = 'top_days.png'):
 
     return top_days
 
+def get_month_sums(data, filename = 'month_sums.png'):
+    """
+    Given dataframe containing cleaned data, identifies sums of all data by month and saves plot.
+    """
+    
+    months = data[(data['MONTH']!='09') & (data['MONTH']!='10')].groupby('MONTH').aggregate(sum)['TRAFFIC']
+    ax = months.plot(kind='bar',title='Sum Of Months')
+    fig = ax.get_figure()
+    fig.savefig(filename, bbox_inches='tight')
 
+    return months
 
 def main():
     pass
