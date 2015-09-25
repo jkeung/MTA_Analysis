@@ -67,6 +67,10 @@ def add_clean_columns(data):
 
 def add_time_bin_column(data):
 
+    """
+    Takes a dataframe and creates a column with the times binned by every 4 hours
+    """
+
     data["TIME_INT"] = data["TIME"].map(lambda x: int(x.replace(":", "")))
     data["TIME_BIN"] = data["TIME_INT"].map(lambda x: get_range(x))
     data = data.drop("TIME_INT",1)
@@ -91,6 +95,11 @@ def get_range(time):
 
 def add_traffic_column(data):
 
+    """
+    Given a DatraFrame it addes a column
+    that is the sum of the Entries and Exits for a station
+    """
+
     data = data[(data['TIMEFRAME_ENTRIES'] >= 0) & (data['TIMEFRAME_ENTRIES'] <= 5000)]
     data = data[(data['TIMEFRAME_EXITS'] >= 0) & (data['TIMEFRAME_EXITS'] <= 5000)]
     data['TRAFFIC'] = data['TIMEFRAME_ENTRIES'] + data['TIMEFRAME_EXITS']
@@ -101,6 +110,11 @@ def add_traffic_column(data):
 
 
 def drop_unneeded_columns(data):
+
+    """
+    removes the ENTRIES and EXITS column
+    and also drops na values
+    """
 
     data = data.drop('ENTRIES', 1)
     data = data.drop('EXITS', 1)
