@@ -58,29 +58,16 @@ def plot_station(data, station):
     Given dataframe containing cleaned data and list of stations, plots time bin data 
     for a station
     """
-    topstationdata = data[data['STATION']==station]
-    ax = topstationdata.groupby(['TIME_BIN']).sum().plot(kind = 'bar', title='%s Station Schedule' % station)
+
+    top_station_data = data[data['STATION'] == station]
+    ax = top_station_data.groupby(['TIME_BIN']).sum().plot(kind='bar',title='%s Station Schedule' % station)
     fig = ax.get_figure()
-    fig.savefig('%s_station_schedule.png' %station.replace(' ', '_'), bbox_inches='tight')
-    
-    return topstationdata
+    fig.savefig('%s_station_schedule.png' % station.replace(' ', '_'), bbox_inches='tight')
+
+    return top_station_data
 
 
-def plot_station(data, station):
-
-    """
-    Given dataframe containing cleaned data and list of stations, plots time bin data 
-    for a station
-    """
-    topstationdata = data[data['STATION']==station]
-    ax = topstationdata.groupby(['TIME_BIN']).sum().plot(kind = 'bar', title='%s Station Schedule' % station)
-    fig = ax.get_figure()
-    fig.savefig('%s_station_schedule.png' %station.replace(' ', '_'), bbox_inches='tight')
-    
-    return topstationdata
- 
-
-defmain():
+def main():
     pass
 
 
