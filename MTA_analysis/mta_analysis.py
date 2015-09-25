@@ -45,7 +45,7 @@ def get_month_sums(data, filename = 'month_sums.png'):
     Given dataframe containing cleaned data, identifies sums of all data by month and saves plot.
     """
 
-    months = data[(data['MONTH']!='09') & (data['MONTH']!='10')].groupby('MONTH').aggregate(sum)['TRAFFIC']
+    months = data[(data['MONTH']!='09') & (data['MONTH']!='10')].groupby('MONTH').sum()
     ax = months[['TRAFFIC']].plot(kind='bar',title='Sum Of Months')
     fig = ax.get_figure()
     fig.savefig(filename, bbox_inches='tight')
