@@ -55,7 +55,7 @@ def add_clean_columns(data):
     ORDER MATTERS FOR CLEANING
     """
 
-    data = data.rename(columns = {'EXITS                                                               ': 'EXITS'})
+    data = data.rename(columns={'EXITS                                                               ': 'EXITS'})
     data = add_day_month(data)
     data = add_entry_exit_totals(data)
     data = drop_unneeded_columns(data)
@@ -73,21 +73,25 @@ def add_time_bin_column(data):
 
     data["TIME_INT"] = data["TIME"].map(lambda x: int(x.replace(":", "")))
     data["TIME_BIN"] = data["TIME_INT"].map(lambda x: get_range(x))
-    data = data.drop("TIME_INT",1)
+    data = data.drop("TIME_INT", 1)
 
     return data
 
 
 def get_range(time):
 
-    hours = [0,40000,80000,120000,160000,200000] 
+    """
+    used in add_time_bin to get the correct bin for the TIME_BIN column
+    """
+
+    hours = [0, 40000, 80000, 120000, 160000, 200000]
     curr = 0
     prev = 0
     for h in hours:
         curr = h
-        if time <= curr and time> prev:
+        if time <= curr and time > prev:
             return float(curr/10000)
-        elif time ==200000:
+        elif time == 200000:
             return (200000/10000)
         elif time > 200000:
             return 0
@@ -100,8 +104,10 @@ def add_traffic_column(data):
     that is the sum of the Entries and Exits for a station
     """
 
-    data = data[(data['TIMEFRAME_ENTRIES'] >= 0) & (data['TIMEFRAME_ENTRIES'] <= 5000)]
-    data = data[(data['TIMEFRAME_EXITS'] >= 0) & (data['TIMEFRAME_EXITS'] <= 5000)]
+    data = data[(data['TIMEFRAME_ENTRIES'] >= 0) &
+                (data['TIMEFRAME_ENTRIES'] <= 5000)]
+    data = data[(data['TIMEFRAME_EXITS'] >= 0) &
+                (data['TIMEFRAME_EXITS'] <= 5000)]
     data['TRAFFIC'] = data['TIMEFRAME_ENTRIES'] + data['TIMEFRAME_EXITS']
     data = data.drop('TIMEFRAME_ENTRIES', 1)
     data = data.drop('TIMEFRAME_EXITS', 1)
@@ -125,6 +131,12 @@ def drop_unneeded_columns(data):
 
 def add_entry_exit_totals(data):
 
+    """"
+    Given a DataFrame it creates two columns containing both the
+    sum of ENTRIES and EXITS
+    """
+
+
     entries = data['ENTRIES'] - \
         data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
     exit = data['EXITS'] - \
@@ -137,6 +149,11 @@ def add_entry_exit_totals(data):
 
 
 def add_day_month(data):
+
+    """
+    Given a DataFrame it creates columns for the Day, Day int value, 
+    and the Month
+    """
 
     data['DAY'] = data['DATE'].apply(
         lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
