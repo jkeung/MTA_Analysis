@@ -60,8 +60,33 @@ def add_clean_columns(data):
     data = add_entry_exit_totals(data)
     data = drop_unneeded_columns(data)
     data = add_traffic_column(data)
+    data = add_time_bin_column(data)
 
     return data
+
+
+def add_time_bin_column(data):
+
+    data["TIME_INT"] = data["TIME"].map(lambda x: int(x.replace(":", "")))
+    data["TIME_BIN"] = data["TIME_INT"].map(lambda x: get_range(x))
+    data = data.drop("TIME_INT",1)
+
+    return data
+
+
+def get_range(time):
+
+    hours = [0,40000,80000,120000,160000,200000] 
+    curr = 0
+    prev = 0
+    for h in hours:
+        curr = h
+        if time <= curr and time> prev:
+            return float(curr/10000)
+        elif time ==200000:
+            return (200000/10000)
+        elif time > 200000:
+            return 0
 
 
 def add_traffic_column(data):
