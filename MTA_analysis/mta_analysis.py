@@ -14,6 +14,7 @@ def get_top_hours(data, filename='top_hours.png'):
 
 
 def get_top_n_stations(data, n, filename='top_stations.png'):
+    
     """
     Given dataframe containing cleaned data, identifies top n stations
     and saves plot of distribution.
