@@ -185,31 +185,6 @@ def create_dict_by_STATION(data):
     return DataFrameDict
 
 
-def dict_station_time_totals(DataFrameDict):
-
-    """
-    Takes a dictionary of dataframes
-    Returns a data frame containing
-    the difference in entries per station from one time frame to the next
-    """
-
-    sum_dict = {key: pd.DataFrame for key in DataFrameDict}
-
-    for key in DataFrameDict:
-
-        el = DataFrameDict[key].groupby(['DATE', 'TIME'])["ENTRIES"].aggregate(sum)
-        shift = (el - el.shift(1))
-        shift = shift[shift < 5000]
-        shift = shift[shift >= 0]
-        DataFrameDict[key]
-        sum_dict[key] = shift
-
-
-    return sum_dict
-
-
-
-
 def get_Day_sum(DataFrameDict):
     """"
     This takes a dictionary of data frames
