@@ -19,6 +19,7 @@ def get_data():
     
     end_date = datetime.strptime(time.strftime("%y%m%d"), '%y%m%d')
     begin_date = datetime.strptime('141025', '%y%m%d')
+    begin_date = datetime.strptime('151114', '%y%m%d')
     base_link = 'http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
 
     while(begin_date < end_date):
@@ -180,7 +181,7 @@ def get_range(time):
 def main():
     df = get_data()
     df = add_clean_columns(df)
-    df.to_pickle("MTA_DATA.p")
+    df.to_pickle("../MTA_DATA.p")
 
 if __name__ == '__main__':
     main()
