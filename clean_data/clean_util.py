@@ -1,246 +1,186 @@
-from datetime import datetime, timedelta
+#!/usr/bin/env python
 
-from pprint import pprint
+from datetime import datetime, timedelta
 import pandas as pd
+import time
 
 
 def get_data():
 
-    """
-    Downloads data from online MTA data source
-    It loops through all recent data, and appends it to a single csv datafile
-    """
+    """Downloads data from online MTA data source
+    Loops through all recent data, and appends it to a single csv datafile
 
-    end_date = datetime.strptime('150919', '%y%m%d')
-    current_date = datetime.strptime('141025', '%y%m%d')
+    Ex. http://web.mta.info/developers/data/nyct/turnstile/turnstile_150919.txt
+    Args:
+        None
+    Returns:
+        None
+    """
+    
+    end_date = datetime.strptime(time.strftime("%y%m%d"), '%y%m%d')
+    begin_date = datetime.strptime('141025', '%y%m%d')
     base_link = 'http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
-    df = pd.read_csv(base_link+current_date.strftime('%y%m%d')+'.txt')
-    total = len(df)
-    while(current_date < end_date):
-        current_date = current_date+timedelta(days=7)
-        link = base_link+current_date.strftime('%y%m%d')+'.txt'
-        new_df = pd.read_csv(link)
-        total += len(new_df)
-        print link, total
-        df = df.append(new_df, ignore_index=True)
+
+    while(begin_date < end_date):
+
+        link = '{0}{1}.txt'.format(base_link, begin_date.strftime("%y%m%d"))
+        print 'Retrieving data from {0}...'.format(link)
+        try:
+            new_df = pd.read_csv(link)
+            df = df.append(new_df, ignore_index=True)
+        except:
+            df = pd.read_csv(link)
+        begin_date = begin_date + timedelta(days=7)
 
     return df
 
 
-def save_file(name, data):
+def add_clean_columns(df):
 
-    """
-    Saves pandas data to a csv file
-    """
-
-    data.to_pickle(name)
-
-
-def get_data_local(name):
-
-    """
-    Reads data from local csv file
-    """
-
-    data = pd.read_pickle(name)
-    return data
-
-
-def add_clean_columns(data):
-
-    """
-    Cleans the dataframe
+    """Cleans the dataframe
     Adds: 'DAY', 'MONTH', 'TIMEFRAME_ENTRIES', 'TIMEFRAME_EXITS'
     Removes: 'ENTRIES', 'EXITS'
     Filters: Keeps entries and exits only between 0 and 5000
 
     ORDER MATTERS FOR CLEANING
+
+    Args:
+        df (pandas.DataFrame): The uncleaned pandas dataframe
+    Returns:
+        df (pandas.DataFrame): The cleaned pandas dataframe
     """
 
-    data = data.rename(columns={'EXITS                                                               ': 'EXITS'})
-    data = add_day_month(data)
-    data = add_entry_exit_totals(data)
-    data = drop_unneeded_columns(data)
-    data = add_traffic_column(data)
-    data = add_time_bin_column(data)
+    df = df.rename(columns={'EXITS                                                               ': 'EXITS'})
+    df = add_day_month(df)
+    df = add_entry_exit_totals(df)
+    df = add_traffic_column(df)
+    df = add_time_bin_column(df)
 
-    return data
+    return df
 
 
-def add_time_bin_column(data):
+def add_day_month(df):
+
+    """Creates columns for the Day, Day int value, and the Month
+
+    Args:
+        df (pandas.DataFrame): The original pandas dataframe
+    Returns:
+        df (pandas.DataFrame): The pandas dataframe with the DAY, DAY_NUM, and MONTH columns
+    """
+
+    df['DAY'] = df['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
+    df['DAY_NUM'] = df['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
+    df['MONTH'] = df['DATE'].apply(
+        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
+
+    return df
+
+
+def add_entry_exit_totals(df):
+
+    """Creates two columns containing both the sum of ENTRIES and EXITS
+
+    Args:
+        df (pandas.DataFrame): The original pandas dataframe
+    Returns:
+        df (pandas.DataFrame): The pandas dataframe with the TIMEFRAME_ENTRIES and TIMEFRAME_EXITS columns
+                               and drops the ENTRIES and EXITS columns
+    """
+
+    entries = df['ENTRIES'] - \
+        df.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
+    exit = df['EXITS'] - \
+        df.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['EXITS'].shift(1)
+
+    df['TIMEFRAME_ENTRIES'] = entries
+    df['TIMEFRAME_EXITS'] = exit
+    df = df.drop('ENTRIES', 1)
+    df = df.drop('EXITS', 1)
+    df.dropna()
+
+    return df
+
+
+def add_traffic_column(df):
+
+    """Add a TRAFFIC column that is the sum of the Entries and Exits for a station
+
+    Args:
+        df (pandas.DataFrame): The original pandas dataframe
+    Returns:
+        df (pandas.DataFrame): The pandas dataframe with the TRAFFIC column and TIMEFRAME_ENTRIES
+                               and TIMEFRAME_EXITS columns removed
+    """
+
+    df = df[(df['TIMEFRAME_ENTRIES'] >= 0) &
+                (df['TIMEFRAME_ENTRIES'] <= 5000)]
+    df = df[(df['TIMEFRAME_EXITS'] >= 0) &
+                (df['TIMEFRAME_EXITS'] <= 5000)]
+    df['TRAFFIC'] = df['TIMEFRAME_ENTRIES'] + df['TIMEFRAME_EXITS']
+    df = df.drop('TIMEFRAME_ENTRIES', 1)
+    df = df.drop('TIMEFRAME_EXITS', 1)
+
+    return df
+
+
+def add_time_bin_column(df):
 
     """
     Takes a dataframe and creates a column with the times binned by every 4 hours
+
+    Args:
+        df (pandas.DataFrame): The original pandas dataframe
+    Returns:
+        df (pandas.DataFrame): The pandas dataframe with the TIME_BIN column
     """
 
-    data["TIME_INT"] = data["TIME"].map(lambda x: int(x.replace(":", "")))
-    data["TIME_BIN"] = data["TIME_INT"].map(lambda x: get_range(x))
-    data = data.drop("TIME_INT", 1)
+    df["TIME_INT"] = df["TIME"].map(lambda x: int(x.replace(":", "")))
+    df["TIME_BIN"] = df["TIME_INT"].map(lambda x: get_range(x))
+    df = df.drop("TIME_INT", 1)
 
-    return data
+    return df
 
 
 def get_range(time):
 
-    """
-    used in add_time_bin to get the correct bin for the TIME_BIN column
+    """An function used to get the correct 4 hour interval for the TIME_BIN column
+
+    Takes a dataframe and creates a column with the times binned by every 4 hours
+
+    Args:
+        time (int): A time int representation in the format hhmmss
+        Ex: noon would be represented as 120000
+    Returns:
+        output (float): The 4 hour time interval that the integer input time belongs to
+
     """
 
     hours = [0, 40000, 80000, 120000, 160000, 200000]
-    curr = 0
     prev = 0
+    output = 0.0
     for h in hours:
-        curr = h
-        if time <= curr and time > prev:
-            return float(curr/10000)
+        if time <= h and time > prev:
+            output = float(h/10000)
+            return output
         elif time == 200000:
-            float(200000/10000)
-            return float(200000/10000)
+            output = float(200000/10000)
+            return output
         elif time > float(200000):
-            return float(24)
+            output = float(24)
+            return output
+        # midnight
         elif time == 0:
-            return float(24)
-
-
-def add_traffic_column(data):
-
-    """
-    Given a DatraFrame it addes a column
-    that is the sum of the Entries and Exits for a station
-    """
-
-    data = data[(data['TIMEFRAME_ENTRIES'] >= 0) &
-                (data['TIMEFRAME_ENTRIES'] <= 5000)]
-    data = data[(data['TIMEFRAME_EXITS'] >= 0) &
-                (data['TIMEFRAME_EXITS'] <= 5000)]
-    data['TRAFFIC'] = data['TIMEFRAME_ENTRIES'] + data['TIMEFRAME_EXITS']
-    data = data.drop('TIMEFRAME_ENTRIES', 1)
-    data = data.drop('TIMEFRAME_EXITS', 1)
-
-    return data
-
-
-def drop_unneeded_columns(data):
-
-    """
-    removes the ENTRIES and EXITS column
-    and also drops na values
-    """
-
-    data = data.drop('ENTRIES', 1)
-    data = data.drop('EXITS', 1)
-    data.dropna()
-
-    return data
-
-
-def add_entry_exit_totals(data):
-
-    """"
-    Given a DataFrame it creates two columns containing both the
-    sum of ENTRIES and EXITS
-    """
-
-
-    entries = data['ENTRIES'] - \
-        data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['ENTRIES'].shift(1)
-    exit = data['EXITS'] - \
-        data.groupby(['C/A', 'UNIT', 'SCP', 'STATION'])['EXITS'].shift(1)
-
-    data['TIMEFRAME_ENTRIES'] = entries
-    data['TIMEFRAME_EXITS'] = exit
-
-    return data
-
-
-def add_day_month(data):
-
-    """
-    Given a DataFrame it creates columns for the Day, Day int value, 
-    and the Month
-    """
-
-    data['DAY'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%a'))
-    data['DAY_NUM'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%w'))
-    data['MONTH'] = data['DATE'].apply(
-        lambda x: datetime.strptime(x, '%m/%d/%Y').strftime('%m'))
-
-    return data
-
-
-def create_dict_by_STATION(data):
-
-    """
-    This converts the MTA data frame into a dictionary
-    The stations are keys
-    The values are data frames
-    The data frames are the data that has the key in the stations column
-    """
-
-    UniqueNames = data["STATION"].unique()
-    DataFrameDict = {elem: pd.DataFrame for elem in UniqueNames}
-    for key in DataFrameDict.keys():
-        DataFrameDict[key] = data[:][data["STATION"] == key]
-
-    return DataFrameDict
-
-
-def get_Day_sum(DataFrameDict):
-
-    """"
-    This takes a dictionary of data frames
-    Returns a dictionary of dataframes containing the sum of entries per day
-    For the given station as a key
-    """
-
-    day_dict = {}
-    for key in DataFrameDict:
-        day_dict[key] = DataFrameDict[key].groupby(
-            ['STATION', 'DAY']).aggregate(sum)
-
-    print(day_dict)
-
-    return day_dict
-
-
-def get_month_sum(DataFrameDict):
-
-    """"
-    This takes a dictionary of data frames
-    Returns a dictionary of dataframes containing the sum of entries per month
-    For the given station as a key
-    """
-
-    month_dict = {}
-    for key in DataFrameDict:
-        month_dict[key] = DataFrameDict[key].groupby(
-            ['STATION', 'MONTH']).aggregate(sum)
-
-    return month_dict
-
-
-def get_hour_sum(DataFrameDict):
-    
-    """"
-    This takes a dictionary of data frames
-    Returns a dictionary of dataframes containing the sum of entries per month
-    For the given station as a key
-    """
-
-    hour_dict = {}
-    for key in DataFrameDict:
-        hour_dict[key] = DataFrameDict[key].groupby(
-            ['STATION', 'TIME']).aggregate(sum)
-
-    return hour_dict
+            output = float(24)
+    return output
 
 
 def main():
-    data = get_data()
-    save_file("MTA_DATA.p",data)
-
+    df = get_data()
+    df = add_clean_columns(df)
+    df.to_pickle("MTA_DATA.p")
 
 if __name__ == '__main__':
     main()
