@@ -181,7 +181,7 @@ def get_range(time):
 def main():
     df = get_data()
     df = add_clean_columns(df)
-    df.to_pickle("../MTA_DATA.p")
+    df.to_pickle("MTA_DATA.p")
 
 if __name__ == '__main__':
     main()
