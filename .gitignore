@@ -1,6 +1,8 @@
 # ipython notebooks
 *.ipynb
 
-#data
+# data
 *.p
 
+# compiled files
+*.pyc
