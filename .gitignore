@@ -7,5 +7,5 @@
 # compiled files
 *.pyc
 
-# images
-*.png
+# charts
+charts/
