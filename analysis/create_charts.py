@@ -3,10 +3,11 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 
+INFILE = 'MTA_DATA.p'
 OUTPUTDIR = 'charts'
 
-def create_dir(directory):
 
+def create_dir(directory):
     """Creates directory if doesn't exist
     Args:
         directory: Name of the output directory
@@ -14,14 +15,14 @@ def create_dir(directory):
         None
     """
 
-    #Check to see if directory exists
+    # Check to see if directory exists
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 
 def get_top_hours(df, filename='top_hours.png'):
 
-    """Given a Processed DataFrame this function plots the hours in a day 
+    """Given a Processed DataFrame this function plots the hours in a day
     binned by 4 hour time interval and saves a plot of the distribution.
 
     Args:
@@ -43,7 +44,7 @@ def get_top_hours(df, filename='top_hours.png'):
 
 
 def get_top_n_stations(df, n, filename='top_stations.png'):
-    
+
     """Given a Processed DataFrame this function identifies the top n
     stations and save a plot of the distribution.
 
@@ -88,8 +89,8 @@ def get_top_days(df, filename='top_days.png'):
     plt.close(fig)
     return top_days[['TRAFFIC']]
 
-def get_month_sums(df, filename = 'month_sums.png'):
 
+def get_month_sums(df, filename='month_sums.png'):
     """Given a Processed DataFrame this function aggregates the turnstile
     traffic data by month and saves a plot of the distribution.
 
@@ -103,8 +104,8 @@ def get_month_sums(df, filename = 'month_sums.png'):
     outputdir = os.path.join(OUTPUTDIR, 'general')
     create_dir(outputdir)
     output_file = os.path.join(outputdir, filename)
-    months = df[(df['MONTH']!='09') & (df['MONTH']!='10')].groupby('MONTH').sum()
-    ax = months[['TRAFFIC']].plot(kind='bar',title='Sum Of Months')
+    months = df[(df['MONTH'] != '09') & (df['MONTH'] != '10')].groupby('MONTH').sum()
+    ax = months[['TRAFFIC']].plot(kind='bar', title='Sum Of Months')
     fig = ax.get_figure()
     fig.savefig(output_file, bbox_inches='tight')
     plt.close(fig)
@@ -120,7 +121,7 @@ def plot_station_hour(df, station):
         data (pandas.DataFrame): The pandas dataframe that contains the cleaned MTA_data
         station (str): The station name
     Returns:
-        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic 
+        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic
         by hourly time bin.
     """
 
@@ -146,7 +147,7 @@ def plot_station_day_of_week(df, station):
         data (pandas.DataFrame): The pandas dataframe that contains the cleaned MTA_data
         station (str): The station name
     Returns:
-        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic 
+        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic
         by day.
     """
 
@@ -172,7 +173,7 @@ def plot_station_month(df, station):
         data (pandas.DataFrame): The pandas dataframe that contains the cleaned MTA_data
         station (str): The station name
     Returns:
-        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic 
+        top_station_data (pandas.DataFrame): A pandas dataframe that contains the turnstile traffic
         by month.
     """
 
@@ -191,15 +192,23 @@ def plot_station_month(df, station):
 
 def main():
     # Create output directory
-    create_dir(OUTPUTDIR)
-    df = pickle.load(open("MTA_DATA.p", "r"))
 
+    create_dir(OUTPUTDIR)
+    print "Loading {0} pickle file".format(INFILE)
+    df = pickle.load(open(INFILE, "r"))
+
+    print "Creating charts..."
+    get_top_hours(df)
+    get_top_days(df)
+    get_month_sums(df)
     # Get list of top 400 stations and save output into output directory
     stations = get_top_n_stations(df, 400).index
     for station in stations:
         plot_station_hour(df, station)
         plot_station_day_of_week(df, station)
         plot_station_month(df, station)
+
+    print "Creating charts complete!"
 
 if __name__ == '__main__':
     main()

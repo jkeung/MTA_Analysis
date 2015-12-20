@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-
 from datetime import datetime, timedelta
 import pandas as pd
 import time
+
+OUTFILE = 'MTA_DATA.p'
 
 
 def get_data():
@@ -16,10 +17,9 @@ def get_data():
     Returns:
         None
     """
-    
+
     end_date = datetime.strptime(time.strftime("%y%m%d"), '%y%m%d')
     begin_date = datetime.strptime('141025', '%y%m%d')
-    begin_date = datetime.strptime('151114', '%y%m%d')
     base_link = 'http://web.mta.info/developers/data/nyct/turnstile/turnstile_'
 
     while(begin_date < end_date):
@@ -117,9 +117,9 @@ def add_traffic_column(df):
     """
 
     df = df[(df['TIMEFRAME_ENTRIES'] >= 0) &
-                (df['TIMEFRAME_ENTRIES'] <= 5000)]
+            (df['TIMEFRAME_ENTRIES'] <= 5000)]
     df = df[(df['TIMEFRAME_EXITS'] >= 0) &
-                (df['TIMEFRAME_EXITS'] <= 5000)]
+            (df['TIMEFRAME_EXITS'] <= 5000)]
     df['TRAFFIC'] = df['TIMEFRAME_ENTRIES'] + df['TIMEFRAME_EXITS']
     df = df.drop('TIMEFRAME_ENTRIES', 1)
     df = df.drop('TIMEFRAME_EXITS', 1)
@@ -179,9 +179,12 @@ def get_range(time):
 
 
 def main():
+    print "Pulling data..."
     df = get_data()
     df = add_clean_columns(df)
-    df.to_pickle("MTA_DATA.p")
+    df.to_pickle(OUTFILE)
+    print "Pulling data complete!"
+    print "Data saved to {0}".format(OUTFILE)
 
 if __name__ == '__main__':
     main()
