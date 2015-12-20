@@ -3,6 +3,7 @@
 
 # data
 *.p
+*.png
 
 # compiled files
 *.pyc
